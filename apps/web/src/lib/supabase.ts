@@ -8,7 +8,7 @@ export const supabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 if (!supabaseConfigured) {
   // eslint-disable-next-line no-console
   console.warn(
-    'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in apps/web/.env.local',
+    'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your frontend environment.',
   )
 }
 
