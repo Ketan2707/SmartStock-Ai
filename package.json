@@ -1,0 +1,21 @@
+{
+  "name": "smartstock-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SmartStock AI - Local Business Demand Predictor & Inventory Intelligence Platform",
+  "scripts": {
+    "dev": "concurrently -n web,api -c blue,green \"npm run dev -w @smartstock/web\" \"npm run dev -w @smartstock/api\"",
+    "dev:web": "npm run dev -w @smartstock/web",
+    "dev:api": "npm run dev -w @smartstock/api",
+    "build": "npm run build -w @smartstock/web && npm run build -w @smartstock/api",
+    "lint": "npm run lint -w @smartstock/web && npm run lint -w @smartstock/api"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  },
+  "license": "MIT"
+}
