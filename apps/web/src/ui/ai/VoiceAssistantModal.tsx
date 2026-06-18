@@ -104,6 +104,7 @@ export function VoiceAssistantModal({
   const [intent, setIntent] = useState<VoiceIntent | null>(null)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [manualText, setManualText] = useState('')
 
   useEffect(() => {
     if (!open) {
@@ -120,6 +121,7 @@ export function VoiceAssistantModal({
     setIntent(null)
     setError('')
     setSuccessMessage('')
+    setManualText('')
     transcriptRef.current = ''
   }
 
@@ -135,6 +137,9 @@ export function VoiceAssistantModal({
     return window.SpeechRecognition ?? window.webkitSpeechRecognition ?? null
   }
 
+  const speechSupported = typeof window !== 'undefined' && Boolean(getRecognitionCtor())
+  const secureContext = typeof window !== 'undefined' ? window.isSecureContext : true
+
   async function startListening() {
     if (!activeShop) {
       setError('Select a shop before using voice assistant.')
@@ -148,9 +153,15 @@ export function VoiceAssistantModal({
       return
     }
 
+    if (!secureContext) {
+      setError('Microphone requires HTTPS. Open the app on https:// (or use localhost in development).')
+      setState('error')
+      return
+    }
+
     const RecognitionCtor = getRecognitionCtor()
     if (!RecognitionCtor) {
-      setError('Voice recognition is not supported in this browser. Try Chrome or Edge.')
+      setError('Voice recognition is not supported in this browser. Use Chrome or Edge, or type the command below.')
       setState('error')
       return
     }
@@ -410,10 +421,38 @@ export function VoiceAssistantModal({
               </div>
             </div>
 
-            <div className="mt-5 flex justify-end">
-              <Button type="button" onClick={startListening} disabled={!ready}>
-                <Mic size={16} className="mr-1.5" /> Start Listening
-              </Button>
+            <div className="mt-5 flex flex-col gap-3">
+              <div className="flex justify-end">
+                <Button type="button" onClick={startListening} disabled={!ready || !speechSupported || !secureContext}>
+                  <Mic size={16} className="mr-1.5" /> Start Listening
+                </Button>
+              </div>
+
+              {(!speechSupported || !secureContext) && (
+                <div className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                  <div className="font-medium text-slate-800 dark:text-slate-100">Voice not available here</div>
+                  <div className="mt-1 text-xs">
+                    {!secureContext
+                      ? 'Microphone needs HTTPS.'
+                      : 'This browser does not support SpeechRecognition.'}
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={manualText}
+                      onChange={(e) => setManualText(e.target.value)}
+                      placeholder='Type: "Add 10 Maggi"'
+                      className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => manualText.trim() && void parseTranscript(manualText.trim())}
+                      disabled={!ready || !manualText.trim()}
+                    >
+                      Parse
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

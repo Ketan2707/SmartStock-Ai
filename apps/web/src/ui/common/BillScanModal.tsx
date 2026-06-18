@@ -79,6 +79,14 @@ export function BillScanModal({
   /* ── start live camera ── */
   async function startCamera() {
     setCamError(null)
+    if (!window.isSecureContext) {
+      setCamError('Camera requires HTTPS. Open the app on https:// (or use localhost in development).')
+      return
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCamError('Camera is not supported in this browser. Try Chrome or Edge, or use file upload instead.')
+      return
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -243,10 +251,11 @@ export function BillScanModal({
             ) : camActive ? (
               <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
             ) : (
-              <div className="flex h-full items-center justify-center text-slate-500">
+              <div className="flex h-full items-center justify-center text-slate-200/80">
                 <div className="text-center">
                   <Camera size={40} className="mx-auto mb-2 opacity-40" />
-                  <p className="text-sm">Camera preview will appear here</p>
+                  <p className="text-sm">Click “Open Camera” or “Upload File”</p>
+                  {camError && <p className="mt-2 text-xs text-amber-300">{camError}</p>}
                 </div>
               </div>
             )}
