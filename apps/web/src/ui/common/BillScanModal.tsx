@@ -57,6 +57,18 @@ export function BillScanModal({
     if (!open) stopCamera()
   }, [open])
 
+  useEffect(() => {
+    const video = videoRef.current
+    const stream = streamRef.current
+
+    if (!video || !stream || !camActive || preview) return
+
+    video.srcObject = stream
+    void video.play().catch(() => {
+      setCamError('Could not start the live camera preview. Try reopening the camera.')
+    })
+  }, [camActive, preview])
+
   function stopCamera() {
     streamRef.current?.getTracks().forEach((t) => t.stop())
     streamRef.current = null
@@ -92,10 +104,6 @@ export function BillScanModal({
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        await videoRef.current.play()
-      }
       setCamActive(true)
     } catch {
       setCamError('Camera access denied. Use file upload instead.')
@@ -249,7 +257,7 @@ export function BillScanModal({
             {preview ? (
               <img src={preview} alt="Captured bill" className="h-full w-full object-contain" />
             ) : camActive ? (
-              <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
+              <video ref={videoRef} className="h-full w-full object-cover" playsInline muted autoPlay />
             ) : (
               <div className="flex h-full items-center justify-center text-slate-200/80">
                 <div className="text-center">
